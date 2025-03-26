@@ -4,10 +4,10 @@ El proyecto consiste en un backend realizado con NodeJS, que maneja solicitudes 
 
 > [!NOTE]
 > Tecnologías usadas
-> * NodeJS
-> * Express
-> * Nodemon
-> * Sequelize
-> * Swagger
-> * JWT
-> * BCrypt
+> * [NodeJS](https://nodejs.org/es)
+> * [Express](https://www.npmjs.com/package/express)
+> * [Nodemon](https://www.npmjs.com/package/nodemon)
+> * [Sequelize](https://sequelize.org/)
+> * [Swagger](https://github.com/swagger-api/swagger-ui)
+> * [JWT](https://auth0.com/docs/secure/tokens/json-web-tokens)
+> * [BCrypt](https://www.npmjs.com/package/bcrypt)
