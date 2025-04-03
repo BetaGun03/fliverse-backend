@@ -1,7 +1,7 @@
 // File that handles user-related routes
 const express = require('express')
 const { User } = require("../models/relations")
-//Import auth middleware: const auth = require('../middleware/auth')
+const auth = require('../middleware/auth')
 const router = new express.Router()
 
 //TODO: Add documentation for all routes with swagger
@@ -15,6 +15,18 @@ router.get('/users', async (req, res) => {
     catch (e) {
         console.log(e)
         res.status(500).send()
+    }
+})
+
+// Endpoint to register a new user
+router.post("/users/register", async (req, res) => {
+    const user = User.build(req.body)
+    try {
+        await user.save()
+        res.status(201).send(user)
+    } catch (e) {
+        console.log(e)
+        res.status(400).send()
     }
 })
 
