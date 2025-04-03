@@ -62,6 +62,9 @@ const User = sequelize.define("User", {
         type: DataTypes.ARRAY(DataTypes.TEXT),
         allowNull: true
     },
+},
+{
+    tableName: 'USER'
 })
 
 module.exports = User

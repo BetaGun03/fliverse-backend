@@ -13,6 +13,9 @@ const Content_User = sequelize.define("Content_User", {
         allowNull: false,
         defaultValue: 'to_watch',
     }
+},
+{
+    tableName: "CONTENT_USER"
 })
 
 module.exports = Content_User

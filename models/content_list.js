@@ -8,6 +8,9 @@ const Content_List = sequelize.define("Content_List", {
         primaryKey: true,
         autoIncrement: true
     }
+},
+{
+    tableName: "CONTENT_LIST"
 })
 
 module.exports = Content_List

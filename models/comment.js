@@ -17,6 +17,9 @@ const Comment = sequelize.define("Comment", {
         allowNull: false,
         defaultValue: Sequelize.NOW
     }
+},
+{
+    tableName: "COMMENT"
 })
 
 module.exports = Comment

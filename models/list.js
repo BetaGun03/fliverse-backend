@@ -21,6 +21,9 @@ const List = sequelize.define("List", {
         defaultValue: DataTypes.NOW,
         allowNull: false
     }
+},
+{
+    tableName: "LIST"
 })
 
 module.exports = List

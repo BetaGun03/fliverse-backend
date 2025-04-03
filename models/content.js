@@ -63,6 +63,9 @@ const Content = sequelize.define("Content", {
         type: DataTypes.ARRAY(DataTypes.TEXT),
         allowNull: false
     }
+},
+{
+    tableName: "CONTENT"
 })
 
 module.exports = Content

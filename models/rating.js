@@ -16,6 +16,9 @@ const Rating = sequelize.define('Rating', {
         type: DataTypes.DATE,
         allowNull: false
     }
+},
+{
+    tableName: "RATING"
 })
 
 module.exports = Rating
