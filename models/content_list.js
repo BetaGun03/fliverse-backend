@@ -10,7 +10,8 @@ const Content_List = sequelize.define("Content_List", {
     }
 },
 {
-    tableName: "CONTENT_LIST"
+    tableName: "CONTENT_LIST",
+    timestamps: false
 })
 
 module.exports = Content_List

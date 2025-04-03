@@ -18,7 +18,8 @@ const Rating = sequelize.define('Rating', {
     }
 },
 {
-    tableName: "RATING"
+    tableName: "RATING",
+    timestamps: false
 })
 
 module.exports = Rating

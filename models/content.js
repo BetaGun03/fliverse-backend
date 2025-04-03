@@ -65,7 +65,8 @@ const Content = sequelize.define("Content", {
     }
 },
 {
-    tableName: "CONTENT"
+    tableName: "CONTENT",
+    timestamps: false
 })
 
 module.exports = Content

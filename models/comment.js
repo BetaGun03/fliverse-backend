@@ -19,7 +19,8 @@ const Comment = sequelize.define("Comment", {
     }
 },
 {
-    tableName: "COMMENT"
+    tableName: "COMMENT",
+    timestamps: false
 })
 
 module.exports = Comment

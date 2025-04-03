@@ -15,7 +15,8 @@ const Content_User = sequelize.define("Content_User", {
     }
 },
 {
-    tableName: "CONTENT_USER"
+    tableName: "CONTENT_USER",
+    timestamps: false
 })
 
 module.exports = Content_User
