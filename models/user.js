@@ -1,16 +1,44 @@
 const { Sequelize, DataTypes, Model } = require('sequelize')
 const sequelize = require("../db/sequelizeConnection")
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 // Defines the User model of the database for the ORM
 class User extends Model{
-    toJSON(){
+    toJSON()
+    {
         const values = { ...this.get() }
+        delete values.id
         delete values.password
         delete values.tokens
         delete values.sub
         delete values.register_date
         return values
+    }
+
+    // Instance method to compare the password with the hashed password in the database. Retuns true if they match
+    async comparePassword(password)
+    {
+        const user = this
+        const isMatch = await bcrypt.compare(password, user.password)
+        return isMatch
+    }
+
+    // Instance method to generate a JWT token for the user using the secret key. Returns the token
+    async generateAuthToken()
+    {
+        const user = this
+        const token = jwt.sign({ id: this.id }, process.env.JWT_SECRET, { expiresIn: '24h' })
+        user.tokens = [...user.tokens, token]
+
+        try{
+            await user.save()
+        }
+        catch (e) {
+            console.error(`Error saving token: ${e}`)
+        }
+
+        return token
     }
 }
 
@@ -73,7 +101,8 @@ User.init(
         },
         tokens:{
             type: DataTypes.ARRAY(DataTypes.TEXT),
-            allowNull: true
+            allowNull: true,
+            defaultValue: []
         }
 },
 {
