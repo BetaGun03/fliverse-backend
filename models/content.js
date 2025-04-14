@@ -35,11 +35,8 @@ Content.init(
             }
         },
         poster:{
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate:{
-                isUrl: true
-            }
+            type: DataTypes.BLOB,
+            allowNull: false
         },
         trailer_url:{
             type: DataTypes.STRING,
@@ -70,6 +67,10 @@ Content.init(
         },
         keywords:{
             type: DataTypes.ARRAY(DataTypes.TEXT),
+            allowNull: false
+        },
+        poster_mime:{
+            type: DataTypes.STRING,
             allowNull: false
         }
 },

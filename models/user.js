@@ -88,11 +88,8 @@ User.init(
             }
         },
         profile_pic:{
-            type: DataTypes.STRING,
-            allowNull: true,
-            validate:{
-                isUrl: true
-            }
+            type: DataTypes.BLOB,
+            allowNull: true
         },
         sub:{
             type: DataTypes.TEXT,
@@ -103,6 +100,10 @@ User.init(
             type: DataTypes.ARRAY(DataTypes.TEXT),
             allowNull: true,
             defaultValue: []
+        },
+        profile_pic_mime:{
+            type: DataTypes.STRING,
+            allowNull: true
         }
 },
 {
