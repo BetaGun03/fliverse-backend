@@ -9,6 +9,7 @@ El proyecto consiste en un backend realizado con NodeJS, que maneja solicitudes 
 > * [Nodemon](https://www.npmjs.com/package/nodemon)
 > * [Sequelize PostgreSQL](https://sequelize.org/)
 > * [Swagger-UI-Express](https://github.com/scottie1984/swagger-ui-express)
+> * [Swagger-jsdoc](https://www.npmjs.com/package/swagger-jsdoc)
 > * [JWT](https://www.npmjs.com/package/jsonwebtoken)
 > * [BCrypt](https://www.npmjs.com/package/bcrypt)
 > * [Google Auth Library](https://www.npmjs.com/package/google-auth-library)
