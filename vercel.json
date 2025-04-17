@@ -3,7 +3,7 @@
     "version": 2,
     "functions": {
       "app.js": {
-        "runtime": "@vercel/node"
+        "runtime": "nodejs20.x"
       }
     },
     "routes": [
@@ -12,4 +12,4 @@
         "dest": "app.js"
       }
     ]
-  }
+}
