@@ -18,8 +18,10 @@ require("./api-docs/swagger")(app)
 
 const PORT = process.env.PORT || 2888
 
+/*
 app.listen(PORT, () => {
     console.log('Server is running on port', PORT)
 })
+*/
 
 module.exports = app
