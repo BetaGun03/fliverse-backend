@@ -46,6 +46,7 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions)
 
 const swaggerUiOptions = {
     explorer: true,
+    customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.0.0/swagger-ui.min.css'
 }
 
 module.exports = (app) => {
