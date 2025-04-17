@@ -1,4 +1,4 @@
-// File that handles user-related routes
+// This file contains the User routes for the API.
 const express = require('express')
 const { User } = require("../models/relations")
 const auth = require('../middlewares/auth')
@@ -77,23 +77,6 @@ router.get('/users', async (req, res) => {
  *         description: User already exists
  *       400:
  *         description: Invalid data or bad request
- *
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         username:
- *           type: string
- *         email:
- *           type: string
- *         name:
- *           type: string
- *         birthdate:
- *           type: string
- *           format: date
- *         profile_pic_mime:
- *           type: string
  */
 router.post("/users/register", upload.single("profile_pic") ,async (req, res) => {
     const user = User.build({

@@ -1,4 +1,9 @@
-// This middleware is used to authenticate requests to the Swagger UI
+// This middleware is used to authenticate requests to the Swagger UI.
+// It uses a hashed password stored in the environment variables to authenticate users.
+// The hashed password is compared with the password provided in the request headers.
+const bcrypt = require('bcrypt')
+require('dotenv').config()
+
 const swaggerAuth = (req, res, next) => {
     const auth = req.headers.authorization
 
@@ -11,7 +16,7 @@ const swaggerAuth = (req, res, next) => {
     const credentials = Buffer.from(auth.split(' ')[1], 'base64').toString().split(':')
     const [user, pass] = credentials
 
-    if (user === process.env.SWAGGER_USER && pass === process.env.SWAGGER_PASS) 
+    if (user === process.env.SWAGGER_USER && bcrypt.compareSync(pass, process.env.SWAGGER_PASSWORD_HASH))
     {
         return next()
     }
