@@ -3,12 +3,12 @@
 // The documentation is generated from the JSDoc comments in the code and is served at the /api-docs endpoint.
 // Only add to the components section, the fields that the model has and are returned in the API response.
 require('dotenv').config()
+const express = require('express')
 const swaggerUi = require('swagger-ui-express')
 const swaggerJSDoc = require('swagger-jsdoc')
 const swaggerAuth = require('../middlewares/swaggerAuth')
 const path = require('path')
 const limit = require('../middlewares/express-rate-limit')
-const { profile } = require('console')
 
 const swaggerOptions = {
     swaggerDefinition: {
@@ -49,6 +49,9 @@ const swaggerUiOptions = {
 }
 
 module.exports = (app) => {
+    const swaggerUiDistPath = require('swagger-ui-dist').getAbsoluteFSPath();
+    app.use('/api-docs', express.static(swaggerUiDistPath));
+    
     app.use('/api-docs', limit, swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions))
 
     app.get('/swagger.json', limit, swaggerAuth, (req, res) => {
