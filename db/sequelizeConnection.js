@@ -1,7 +1,17 @@
 require('dotenv').config()
 const { Sequelize } = require('sequelize')
+const pg = require('pg')
 
-const sequelize = new Sequelize(`postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@ep-fancy-cherry-ab3oig89-pooler.eu-west-2.aws.neon.tech/Fliverse?sslmode=require`)
+const sequelize = new Sequelize(`postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@ep-fancy-cherry-ab3oig89-pooler.eu-west-2.aws.neon.tech/Fliverse?sslmode=require`, {
+  dialect: 'postgres',
+  dialectModule: pg,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: true, // Asegura la verificación del certificado SSL
+    },
+  },
+})
 
 // Function made to test the connection to the database when the server starts. It is called in the app.js file.
 async function testConnection() {
