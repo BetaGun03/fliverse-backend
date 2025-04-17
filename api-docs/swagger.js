@@ -51,8 +51,8 @@ const swaggerUiOptions = {
 }
 
 module.exports = (app) => {
-    const swaggerUiDistPath = require('swagger-ui-dist').getAbsoluteFSPath();
-    app.use('/api-docs', express.static(swaggerUiDistPath));
+    const swaggerUiDistPath = require('swagger-ui-dist').getAbsoluteFSPath()
+    app.use('/api-docs', express.static(swaggerUiDistPath))
     
     app.use('/api-docs', limit, swaggerAuth, swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions))
 

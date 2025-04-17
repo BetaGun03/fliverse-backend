@@ -5,20 +5,6 @@ const auth = require('../middlewares/auth')
 const router = new express.Router()
 const upload = require('../middlewares/upload')
 
-//TODO: Add documentation for all routes with swagger
-
-// Api endpoint to get all users. TESTING ONLY
-router.get('/users', async (req, res) => {
-    try{
-        const users = await User.findAll()
-        res.status(200).send(users)
-    }
-    catch (e) {
-        console.log(e)
-        res.status(500).send()
-    }
-})
-
 /**
  * @swagger
  * /users/register:
