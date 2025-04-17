@@ -2,23 +2,15 @@
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "version": 2,
     "builds": [
-      {
-        "src": "app.js",
-        "use": "@vercel/node"
-      }
+        {
+            "src": "app.js",
+            "use": "@vercel/node"
+        }
     ],
     "routes": [
-      {
-        "src": "/api-docs/(.*)",
-        "dest": "/node_modules/swagger-ui-dist/$1",
-        "headers": {
-          "Cache-Control": "public, max-age=31536000, immutable"
+        {
+            "src": "/(.*)",
+            "dest": "app.js"
         }
-      },
-      {
-        "src": "/(.*)",
-        "dest": "app.js"
-      }
     ]
-  }
-  
+}
