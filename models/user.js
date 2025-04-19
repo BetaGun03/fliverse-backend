@@ -13,6 +13,23 @@ class User extends Model{
         delete values.tokens
         delete values.sub
         delete values.register_date
+        delete values.profile_pic
+        delete values.profile_pic_mime
+        delete values.email
+        delete values.name
+        delete values.birthdate
+        return values
+    }
+
+    // Function to get the public profile information of the user. It returns an object with the user's information excluding sensitive data
+    getPublicProfileInfo()
+    {
+        const values = { ...this.get() }
+        delete values.id
+        delete values.password
+        delete values.tokens
+        delete values.sub
+        delete values.register_date
         return values
     }
 

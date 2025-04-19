@@ -12,8 +12,16 @@ const auth = async (req, res, next) => {
         {
             return res.status(401).json({ message: 'Authorization header missing' })
         }
+
+        // Check if the Authorization header is in the correct format
+        // Format: Bearer <token>
+        const parts = authHeader.trim().split(' ')
+        if (parts.length !== 2 || parts[0] !== 'Bearer') 
+        {
+            return res.status(401).json({ message: 'Invalid authorization format' })
+        }
+        token = parts[1]
         
-        token = authHeader.replace('Bearer ', '')
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const user = await User.findOne({ where: { id: decoded.id } })
 
@@ -36,7 +44,7 @@ const auth = async (req, res, next) => {
         if (error.name === 'TokenExpiredError') 
         {
             try{
-                const expiredToken = jwt.decode(token)
+                const expiredToken = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true })
                 if (expiredToken && expiredToken.id) 
                 {
                     const userToExpire = await User.findByPk(expiredToken.id)
