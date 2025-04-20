@@ -1,9 +1,13 @@
 // This file contains the User routes for the API.
+require("dotenv").config()
 const express = require('express')
 const { User } = require("../models/relations")
 const auth = require('../middlewares/auth')
 const router = new express.Router()
 const upload = require('../middlewares/upload')
+const { OAuth2Client } = require('google-auth-library')
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
 
 /**
  * @swagger
@@ -168,6 +172,58 @@ router.post("/users/login", async (req, res) => {
         console.error(e)
         res.status(400).send()
     }
+})
+
+router.post("/users/loginGoogle", async (req, res) => {
+    const { token } = req.body
+
+    if(!token) 
+    {
+        return res.status(400).send("Google token is required")
+    }
+
+    try{
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        })
+
+        const payload = ticket.getPayload() //Contains the user information from Google
+        let user = await User.findOne({ where: { email: payload.email } })
+
+        // If the user does not exist, create a new one
+        if (!user) 
+        {
+            const response = await fetch(payload.picture)
+
+            if(!response.ok)
+            {
+                throw new Error("Error fetching profile picture")
+            }
+
+            const imageArrayBuffer = await response.arrayBuffer()
+            const imageBuffer = Buffer.from(imageArrayBuffer)
+
+            user = User.build({
+                sub: payload.sub,
+                email: payload.email,
+                username: payload.email.split("@")[0],
+                password: "hola1234567890",
+                profile_pic: imageBuffer,
+                profile_pic_mime: response.headers.get("content-type")
+            })
+
+            await user.save()
+        }
+        
+        const bdtoken = await user.generateAuthToken()
+        res.status(200).send({ user: user, bdtoken: bdtoken })
+    }
+    catch (e) {
+        console.error(e)
+        res.status(401).send("Invalid Google token")
+    }
+
 })
 
 /**
