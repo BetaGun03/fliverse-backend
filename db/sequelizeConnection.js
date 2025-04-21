@@ -2,7 +2,7 @@ require('dotenv').config()
 const { Sequelize } = require('sequelize')
 const pg = require('pg')
 
-const sequelize = new Sequelize(`postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@ep-fancy-cherry-ab3oig89-pooler.eu-west-2.aws.neon.tech/Fliverse?sslmode=require`, {
+const sequelize = new Sequelize(`postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGSERVER}`, {
   dialect: 'postgres',
   dialectModule: pg,
   dialectOptions: {

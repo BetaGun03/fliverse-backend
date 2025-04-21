@@ -15,3 +15,5 @@ El proyecto consiste en un backend realizado con NodeJS, que maneja solicitudes 
 > * [Google Auth Library](https://www.npmjs.com/package/google-auth-library)
 > * [Multer](https://www.npmjs.com/package/multer)
 > * [Express-rate-limit](https://www.npmjs.com/package/express-rate-limit)
+> * [Generate-password](https://www.npmjs.com/package/generate-password)
+> * [NodeMailer](https://www.npmjs.com/package/nodemailer)

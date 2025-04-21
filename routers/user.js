@@ -1,5 +1,7 @@
 // This file contains the User routes for the API.
 require("dotenv").config()
+const fs = require('fs')
+const path = require('path')
 const express = require('express')
 const { User } = require("../models/relations")
 const auth = require('../middlewares/auth')
@@ -8,6 +10,8 @@ const upload = require('../middlewares/upload')
 const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
+const generatePassword = require('generate-password')
+const emailSender = require('../config/mailer')
 
 /**
  * @swagger
@@ -76,6 +80,22 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
 
     try {
         await user.save()
+
+        // Load the HTML template for the email
+        const registerTemplatePath = path.join(__dirname, '../html-templates/registerEmail.html')
+        let htmlContent = fs.readFileSync(registerTemplatePath, 'utf8')
+        htmlContent = htmlContent.replace('{{username}}', user.username)
+
+        // Configure the email options
+        const mailOptions = {
+            from: process.env.ZOHO_USER,
+            to: user.email,
+            subject: 'Fliverse register notification',
+            html: htmlContent
+        }
+
+        await emailSender.sendMail(mailOptions)
+
         const token = await user.generateAuthToken()
         res.status(201).send({ user: user, token: token })
     } catch (e) {
@@ -165,6 +185,20 @@ router.post("/users/login", async (req, res) => {
             return res.status(401).send("Invalid credentials")
         }
 
+        // Load the HTML template for the email
+        const loginTemplatePath = path.join(__dirname, '../html-templates/loginEmail.html')
+        let htmlContent = fs.readFileSync(loginTemplatePath, 'utf8')
+        htmlContent = htmlContent.replace('{{username}}', user.username)
+
+        // Configure the email options
+        const mailOptions = {
+            from: process.env.ZOHO_USER,
+            to: user.email,
+            subject: 'Fliverse login notification',
+            html: htmlContent
+        }
+
+        await emailSender.sendMail(mailOptions)
         const token = await user.generateAuthToken()
         res.status(200).send({ user: user, token: token })
     }
@@ -174,6 +208,55 @@ router.post("/users/login", async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /users/loginGoogle:
+ *   post:
+ *     summary: Inicia sesión o registra un usuario mediante Google OAuth
+ *     tags:
+ *       - Usuarios
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Token de ID de Google obtenido tras la autenticación
+ *                 example: "eyJhbGciOiJSUzI1NiIsImtpZCI6Ij..."
+ *     responses:
+ *       200:
+ *         description: Usuario autenticado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 bdtoken:
+ *                   type: string
+ *                   description: Token JWT generado por el backend
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         description: Token de Google no proporcionado
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Google token is required"
+ *       401:
+ *         description: Token de Google inválido
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Invalid Google token"
+ */
 router.post("/users/loginGoogle", async (req, res) => {
     const { token } = req.body
 
@@ -204,16 +287,59 @@ router.post("/users/loginGoogle", async (req, res) => {
             const imageArrayBuffer = await response.arrayBuffer()
             const imageBuffer = Buffer.from(imageArrayBuffer)
 
+            // It generates a random password for the user
+            // This password is not used, but it is required by the User model
+            // If the user wants to change the password, they can do it later
+            const password = generatePassword.generate({
+                length: 15,
+                numbers: true,
+                symbols: true,
+                uppercase: true,
+                lowercase: true
+            })
+
             user = User.build({
                 sub: payload.sub,
                 email: payload.email,
                 username: payload.email.split("@")[0],
-                password: "hola1234567890",
+                password: password,
                 profile_pic: imageBuffer,
                 profile_pic_mime: response.headers.get("content-type")
             })
 
             await user.save()
+
+            // Load the HTML template for the email
+            const registerTemplatePath = path.join(__dirname, '../html-templates/registerEmail.html')
+            let htmlContent = fs.readFileSync(registerTemplatePath, 'utf8')
+            htmlContent = htmlContent.replace('{{username}}', user.username)
+
+            // Configure the email options
+            const mailOptions = {
+                from: process.env.ZOHO_USER,
+                to: user.email,
+                subject: 'Fliverse register notification',
+                html: htmlContent
+            }
+
+            await emailSender.sendMail(mailOptions)
+        }
+        else
+        {
+            // Load the HTML template for the email
+            const loginTemplatePath = path.join(__dirname, '../html-templates/loginEmail.html')
+            let htmlContent = fs.readFileSync(loginTemplatePath, 'utf8')
+            htmlContent = htmlContent.replace('{{username}}', user.username)
+
+            // Configure the email options
+            const mailOptions = {
+                from: process.env.ZOHO_USER,
+                to: user.email,
+                subject: 'Fliverse login notification',
+                html: htmlContent
+            }
+
+            await emailSender.sendMail(mailOptions)
         }
         
         const bdtoken = await user.generateAuthToken()
@@ -276,6 +402,21 @@ router.post("/users/logoutAll", auth, async (req, res) => {
         const user = req.user
         user.tokens = []
         await user.save()
+
+        // Load the HTML template for the email
+        const logoutAllDevicesTemplatePath = path.join(__dirname, '../html-templates/logoutFromAllDevices.html')
+        let htmlContent = fs.readFileSync(logoutAllDevicesTemplatePath, 'utf8')
+        htmlContent = htmlContent.replace('{{username}}', user.username)
+
+        // Configure the email options
+        const mailOptions = {
+            from: process.env.ZOHO_USER,
+            to: user.email,
+            subject: 'Fliverse logout from all devices notification',
+            html: htmlContent
+        }
+
+        await emailSender.sendMail(mailOptions)
         res.status(200).send("Logged out from all devices")
     }
     catch (e) {
@@ -418,6 +559,21 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
             user.profile_pic = req.file.buffer
             user.profile_pic_mime = req.file.mimetype
         }
+
+        // Load the HTML template for the email
+        const updateUserInformationTemplatePath = path.join(__dirname, '../html-templates/userUpdatedInfo.html')
+        let htmlContent = fs.readFileSync(updateUserInformationTemplatePath, 'utf8')
+        htmlContent = htmlContent.replace('{{username}}', user.username)
+
+        // Configure the email options
+        const mailOptions = {
+            from: process.env.ZOHO_USER,
+            to: user.email,
+            subject: 'Fliverse user information updated notification',
+            html: htmlContent
+        }
+
+        await emailSender.sendMail(mailOptions)
 
         await user.save()
         res.status(200).send(user)
