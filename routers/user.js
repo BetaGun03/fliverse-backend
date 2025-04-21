@@ -214,7 +214,7 @@ router.post("/users/login", async (req, res) => {
  *   post:
  *     summary: Inicia sesión o registra un usuario mediante Google OAuth
  *     tags:
- *       - Usuarios
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:
