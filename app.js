@@ -7,6 +7,7 @@ const userRouter = require('./routers/user')
 
 // Express setup
 const app = express()
+app.set("trust proxy", 1) // Trust first proxy (for Vercel)
 app.use(cors())
 app.use(express.json())
 
