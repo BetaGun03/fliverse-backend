@@ -4,6 +4,7 @@ const express = require('express')
 const cors = require('cors')
 require('./db/sequelizeConnection')
 const userRouter = require('./routers/user')
+const contentRouter = require('./routers/content')
 
 // Express setup
 const app = express()
@@ -13,6 +14,7 @@ app.use(express.json())
 
 // Routes
 app.use(userRouter)
+app.use(contentRouter)
 
 // Swagger docs
 require("./api-docs/swagger")(app)
