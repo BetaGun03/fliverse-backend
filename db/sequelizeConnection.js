@@ -8,9 +8,18 @@ const sequelize = new Sequelize(`postgres://${process.env.PGUSER}:${process.env.
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: true, // Asegura la verificación del certificado SSL
+      rejectUnauthorized: true,
     },
+    keepAlive: true,
   },
+  pool:{
+    max: 100,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+    evict: 20000
+  },
+  logging: false
 })
 
 // Function made to test the connection to the database when the server starts. It is called in the app.js file.
