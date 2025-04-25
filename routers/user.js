@@ -94,7 +94,12 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
             html: htmlContent
         }
 
-        await emailSender.sendMail(mailOptions)
+        emailSender.sendMail(mailOptions, (err, info) => {
+            if (err)
+            {
+                console.error(err)
+            } 
+        })
 
         const token = await user.generateAuthToken()
         res.status(201).send({ user: user, token: token })
@@ -171,7 +176,7 @@ router.post("/users/login", async (req, res) => {
     const password = req.body.password
 
     try{
-        const user = await User.findOne({ where: { username } })
+        const user = await User.findOne({ where: { username }, attributes: { exclude: ['profile_pic', "profile_pic_mime"] } })
 
         if (!user) 
         {
@@ -198,7 +203,13 @@ router.post("/users/login", async (req, res) => {
             html: htmlContent
         }
 
-        await emailSender.sendMail(mailOptions)
+        emailSender.sendMail(mailOptions, (err, info) => {
+            if (err)
+            {
+                console.error(err)
+            } 
+        })
+        
         const token = await user.generateAuthToken()
         res.status(200).send({ user: user, token: token })
     }
@@ -272,7 +283,7 @@ router.post("/users/loginGoogle", async (req, res) => {
         })
 
         const payload = ticket.getPayload() //Contains the user information from Google
-        let user = await User.findOne({ where: { email: payload.email } })
+        let user = await User.findOne({ where: { email: payload.email }, attributes: { exclude: ['profile_pic', "profile_pic_mime"] } })
 
         // If the user does not exist, create a new one
         if (!user) 
@@ -322,7 +333,12 @@ router.post("/users/loginGoogle", async (req, res) => {
                 html: htmlContent
             }
 
-            await emailSender.sendMail(mailOptions)
+            emailSender.sendMail(mailOptions, (err, info) => {
+                if (err)
+                {
+                    console.error(err)
+                } 
+            })
         }
         else
         {
@@ -339,7 +355,12 @@ router.post("/users/loginGoogle", async (req, res) => {
                 html: htmlContent
             }
 
-            await emailSender.sendMail(mailOptions)
+            emailSender.sendMail(mailOptions, (err, info) => {
+                if (err)
+                {
+                    console.error(err)
+                } 
+            })
         }
         
         const bdtoken = await user.generateAuthToken()
@@ -416,7 +437,13 @@ router.post("/users/logoutAll", auth, async (req, res) => {
             html: htmlContent
         }
 
-        await emailSender.sendMail(mailOptions)
+        emailSender.sendMail(mailOptions, (err, info) => {
+            if (err)
+            {
+                console.error(err)
+            } 
+        })
+        
         res.status(200).send("Logged out from all devices")
     }
     catch (e) {
@@ -573,7 +600,12 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
             html: htmlContent
         }
 
-        await emailSender.sendMail(mailOptions)
+        emailSender.sendMail(mailOptions, (err, info) => {
+            if (err)
+            {
+                console.error(err)
+            } 
+        })
 
         await user.save()
         res.status(200).send(user)
