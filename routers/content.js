@@ -6,8 +6,10 @@ const { Content } = require("../models/relations")
 const auth = require('../middlewares/auth')
 const router = new express.Router()
 const upload = require('../middlewares/upload')
+const { getContainerClient } = require('../config/azureStorage')
 
 router.post("/contents", auth, upload.single("poster"), async (req, res) => {
+    let url
     const content = Content.build({
         ...req.body,
         poster: req.file.buffer,
@@ -15,6 +17,14 @@ router.post("/contents", auth, upload.single("poster"), async (req, res) => {
     })
 
     try{
+        const containerClient = await getContainerClient()
+        const blobName = `${content.title}-${Date.now()}-${req.file.originalname}`
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        await blockBlobClient.uploadData(req.file.buffer)
+        url = blockBlobClient.url
+
+        content.poster = url
+            
         await content.save()
         res.status(201).send(content)
     }
@@ -37,6 +47,7 @@ router.post("/contents", auth, upload.single("poster"), async (req, res) => {
 
 router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) => {
     try{
+        let url
         const allowedUpdates =  Object.keys(Content.getAttributes()).filter(attr => !["type", "creation_date"].includes(attr))
         const updates = Object.keys(req.body)
 
@@ -75,6 +86,14 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
         {
             content.poster = req.file.buffer
             content.poster_mime = req.file.mimetype
+
+            const containerClient = await getContainerClient()
+            const blobName = `${content.title}-${Date.now()}-${req.file.originalname}`
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+            await blockBlobClient.uploadData(req.file.buffer)
+            url = blockBlobClient.url
+
+            content.poster = url
         }
 
         await content.save()
@@ -179,8 +198,21 @@ router.get("/contents/posterById", auth, async (req, res) => {
             return res.status(404).send("No content found")
         }
 
+        const urlObj = new URL(content.poster)
+        const encodedName = urlObj.pathname.split("/").pop()
+        const blobName = decodeURIComponent(encodedName)
+
+        const containerClient = await getContainerClient()
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+
+        if (!await blockBlobClient.exists()) 
+        {
+            return res.status(404).send("Poster blob not found")
+        }
+
+        const downloadResponse = await blockBlobClient.download()
         res.set('Content-Type', content.poster_mime)
-        res.status(200).send(content.poster)
+        downloadResponse.readableStreamBody.pipe(res)
     }
     catch (e) {
         console.error(e)
@@ -214,8 +246,21 @@ router.get("/contents/posterByTitle", auth, async (req, res) => {
             return res.status(404).send("No content found")
         }
 
-        res.set('Content-Type', content.poster_mime)
-        res.status(200).send(content.poster)
+        const urlObj = new URL(content.poster)
+        const encodedName = urlObj.pathname.split("/").pop()
+        const blobName = decodeURIComponent(encodedName)
+
+        const containerClient = await getContainerClient()
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+
+        if (!await blockBlobClient.exists()) 
+        {
+            return res.status(404).send("Poster blob not found")
+        }
+
+        const downloadResponse = await blockBlobClient.download()
+        res.set("Content-Type", content.poster_mime)
+        downloadResponse.readableStreamBody.pipe(res)
     }
     catch (e) {
         console.error(e)

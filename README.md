@@ -17,3 +17,4 @@ El proyecto consiste en un backend realizado con NodeJS, que maneja solicitudes 
 > * [Express-rate-limit](https://www.npmjs.com/package/express-rate-limit)
 > * [Generate-password](https://www.npmjs.com/package/generate-password)
 > * [NodeMailer](https://www.npmjs.com/package/nodemailer)
+> * [Azure Storage Blob](https://www.npmjs.com/package/@azure/storage-blob)

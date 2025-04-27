@@ -105,7 +105,7 @@ User.init(
             }
         },
         profile_pic:{
-            type: DataTypes.BLOB,
+            type: DataTypes.TEXT,
             allowNull: true
         },
         sub:{

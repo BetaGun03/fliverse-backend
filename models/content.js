@@ -6,8 +6,6 @@ class Content extends Model {
     toJSON() {
         const values = { ...this.get() }
         delete values.creation_date
-        delete values.poster
-        delete values.poster_mime
         return values
     }
 }
@@ -37,7 +35,7 @@ Content.init(
             }
         },
         poster:{
-            type: DataTypes.BLOB,
+            type: DataTypes.TEXT,
             allowNull: false
         },
         trailer_url:{

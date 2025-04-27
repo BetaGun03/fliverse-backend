@@ -12,6 +12,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
 const generatePassword = require('generate-password')
 const emailSender = require('../config/mailer')
+const { getContainerClient } = require('../config/azureStorage')
 
 /**
  * @swagger
@@ -72,6 +73,7 @@ const emailSender = require('../config/mailer')
  *         description: Invalid data or bad request
  */
 router.post("/users/register", upload.single("profile_pic") ,async (req, res) => {
+    let url
     const user = User.build({
         ...req.body,
         profile_pic: req.file ? req.file.buffer : null,
@@ -79,6 +81,18 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
     })
 
     try {
+        // If the user has a profile picture, upload it to Azure Blob Storage
+        if(req.file)
+        {
+            const containerClient = await getContainerClient()
+            const blobName = `${user.username}-${Date.now()}-${req.file.originalname}`
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+            await blockBlobClient.uploadData(req.file.buffer)
+            url = blockBlobClient.url
+
+            user.profile_pic = url
+        }   
+
         await user.save()
 
         // Load the HTML template for the email
@@ -295,9 +309,6 @@ router.post("/users/loginGoogle", async (req, res) => {
                 throw new Error("Error fetching profile picture")
             }
 
-            const imageArrayBuffer = await response.arrayBuffer()
-            const imageBuffer = Buffer.from(imageArrayBuffer)
-
             // It generates a random password for the user
             // This password is not used, but it is required by the User model
             // If the user wants to change the password, they can do it later
@@ -314,7 +325,7 @@ router.post("/users/loginGoogle", async (req, res) => {
                 email: payload.email,
                 username: payload.email.split("@")[0],
                 password: password,
-                profile_pic: imageBuffer,
+                profile_pic: payload.picture,
                 profile_pic_mime: response.headers.get("content-type")
             })
 
@@ -367,6 +378,17 @@ router.post("/users/loginGoogle", async (req, res) => {
         res.status(200).send({ user: user, bdtoken: bdtoken })
     }
     catch (e) {
+        if(e.name)
+        {
+            if(e.name === "SequelizeUniqueConstraintError")
+            {
+                return res.status(409).send("User already exists")
+            }
+            else if(e.name === "SequelizeValidationError")
+            {
+                return res.status(400).send("Invalid data")
+            }
+        }
         console.error(e)
         res.status(401).send("Invalid Google token")
     }
@@ -562,6 +584,7 @@ router.get("/users/me", auth ,async(req, res) => {
 router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) => {
     try{
         const user = req.user
+        let url
 
         // Get the user fields that can be updated
         // The fields that are not allowed to be updated are: id, username and register_date
@@ -583,7 +606,13 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
 
         if(req.file)
         {
-            user.profile_pic = req.file.buffer
+            const containerClient = await getContainerClient()
+            const blobName = `${user.username}-${Date.now()}-${req.file.originalname}`
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+            await blockBlobClient.uploadData(req.file.buffer)
+            url = blockBlobClient.url
+
+            user.profile_pic = url
             user.profile_pic_mime = req.file.mimetype
         }
 
@@ -648,8 +677,13 @@ router.get("/users/me/profile_pic", auth, async(req, res) => {
             return res.status(404).send("Profile pic not found")
         }
 
+        const containerClient = await getContainerClient()
+        const blobName = user.profile_pic.split("/").pop()
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        const downloadResponse = await blockBlobClient.download()
+
         res.set("Content-Type", user.profile_pic_mime)
-        res.status(200).send(user.profile_pic)
+        downloadResponse.readableStreamBody.pipe(res)
     }
     catch (e) {
         console.error(e)
