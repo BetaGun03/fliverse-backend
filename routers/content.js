@@ -8,6 +8,55 @@ const router = new express.Router()
 const upload = require('../middlewares/upload')
 const { getContainerClient } = require('../config/azureStorage')
 
+/**
+ * @swagger
+ * /contents:
+ *   post:
+ *     summary: Create a new content with an uploaded poster image
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *               - type
+ *               - poster
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 enum:
+ *                   - movie
+ *                   - series
+ *               poster:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Content created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Content'
+ *       400:
+ *         description: Invalid data
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       409:
+ *         description: Content title already in use
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/contents", auth, upload.single("poster"), async (req, res) => {
     let url
     const content = Content.build({
@@ -45,6 +94,54 @@ router.post("/contents", auth, upload.single("poster"), async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /contents/{id}:
+ *   patch:
+ *     summary: Update an existing content and optionally replace its poster image
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Numeric ID of the content to update
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               poster:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Content updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Content'
+ *       400:
+ *         description: Missing or invalid id or invalid update fields
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       404:
+ *         description: No content found with the given id
+ *       409:
+ *         description: Content title already in use
+ *       500:
+ *         description: Internal server error
+ */
 router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) => {
     try{
         let url
@@ -57,7 +154,7 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
             return res.status(400).send("Missing id")
         }
 
-        const id = parseInt(req.params.id)
+        const id = parseInt(req.params.id, 10)
         if(isNaN(id)) 
         {
             return res.status(400).send("Invalid id")
@@ -116,6 +213,38 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
     }
 })
 
+/**
+ * @swagger
+ * /contents/searchById:
+ *   get:
+ *     summary: Retrieve a content by its numeric ID
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Numeric ID of the content to retrieve
+ *     responses:
+ *       200:
+ *         description: Content found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Content'
+ *       400:
+ *         description: Missing or invalid id
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       404:
+ *         description: No content found with the given id
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/contents/searchById", auth, async (req, res) => {
     try{
         if(!req.query.id)
@@ -144,6 +273,40 @@ router.get("/contents/searchById", auth, async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /contents/searchByTitle:
+ *   get:
+ *     summary: Retrieve contents matching a title substring
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Substring to search in content titles
+ *     responses:
+ *       200:
+ *         description: List of matching contents
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Content'
+ *       400:
+ *         description: Missing or empty title
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       404:
+ *         description: No content found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/contents/searchByTitle", auth, async (req, res) => {
     try{
         if(!req.query.title)
@@ -178,6 +341,44 @@ router.get("/contents/searchByTitle", auth, async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /contents/posterById:
+ *   get:
+ *     summary: Retrieve the poster image for a content by its numeric ID
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         description: Numeric ID of the content whose poster to retrieve
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: Poster image stream
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Missing or invalid id
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       404:
+ *         description: 
+ *           - No content found with the given id  
+ *           - Poster blob not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/contents/posterById", auth, async (req, res) => {
     try{
         if(!req.query.id)
@@ -220,6 +421,46 @@ router.get("/contents/posterById", auth, async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /contents/posterByTitle:
+ *   get:
+ *     summary: Retrieve the poster image for a content by its title substring
+ *     tags:
+ *       - Contents
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: title
+ *         description: Substring to search in content titles
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Poster image stream
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description:
+ *           - Missing title
+ *           - Empty title
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       404:
+ *         description:
+ *           - No content found with the given title
+ *           - Poster blob not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/contents/posterByTitle", auth, async (req, res) => {
     try{
         if(!req.query.title)

@@ -32,8 +32,64 @@ const swaggerOptions = {
                         email: { type: 'string', format: 'email' },
                         name: { type: 'string' },
                         birthdate: { type: 'string', format: 'date' },
-                        profile_pic: { type: 'string', format: 'binary' },
+                        profile_pic: { type: 'string', format: 'uri' },
                         profile_pic_mime: { type: 'string' }
+                    }
+                },
+                Content: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'integer' },
+                        title: { type: 'string' },
+                        type: {
+                            type: 'string',
+                            enum: ['movie', 'series']
+                        },
+                        synopsis: { type: 'string' },
+                        poster: { type: 'string', format: 'uri' },
+                        poster_mime: { type: 'string' },
+                        trailer_url: { type: 'string', format: 'uri' },
+                        release_date: { type: 'string', format: 'date-time' },
+                        duration: { type: 'integer' },
+                        genre: {
+                            type: 'array',
+                            items: { type: 'string' }
+                        },
+                        keywords: {
+                            type: 'array',
+                            items: { type: 'string' }
+                        }
+                    },
+                    Comment: {
+                        type: 'object',
+                        properties: {
+                            id:           { type: 'integer' },
+                            text:         { type: 'string' },
+                            comment_date: { type: 'string', format: 'date-time' },
+                            user_id:      { type: 'integer' },
+                            content_id:   { type: 'integer' }
+                        }
+                    },
+                    List: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'integer'
+                            },
+                            name: {
+                                type: 'string'
+                            },
+                            description: {
+                                type: 'string',
+                                nullable: true
+                            },
+                            contents: {
+                                type: 'array',
+                                items: {
+                                    $ref: '#/components/schemas/Content'
+                                }
+                            }
+                        }
                     }
                 }
             }
