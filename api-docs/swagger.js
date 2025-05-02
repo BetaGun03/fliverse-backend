@@ -59,35 +59,28 @@ const swaggerOptions = {
                             type: 'array',
                             items: { type: 'string' }
                         }
-                    },
-                    Comment: {
-                        type: 'object',
-                        properties: {
-                            id:           { type: 'integer' },
-                            text:         { type: 'string' },
-                            comment_date: { type: 'string', format: 'date-time' },
-                            user_id:      { type: 'integer' },
-                            content_id:   { type: 'integer' }
-                        }
-                    },
-                    List: {
-                        type: 'object',
-                        properties: {
-                            id: {
-                                type: 'integer'
-                            },
-                            name: {
-                                type: 'string'
-                            },
-                            description: {
-                                type: 'string',
-                                nullable: true
-                            },
-                            contents: {
-                                type: 'array',
-                                items: {
-                                    $ref: '#/components/schemas/Content'
-                                }
+                    }
+                },
+                Comment: {
+                    type: 'object',
+                    properties: {
+                        id:           { type: 'integer' },
+                        text:         { type: 'string' },
+                        comment_date: { type: 'string', format: 'date-time' },
+                        user_id:      { type: 'integer' },
+                        content_id:   { type: 'integer' }
+                    }
+                },
+                List: {
+                    type: 'object',
+                    properties: {
+                        id:          { type: 'integer' },
+                        name:        { type: 'string' },
+                        description: { type: 'string', nullable: true },
+                        contents: {
+                            type: 'array',
+                            items: {
+                                $ref: '#/components/schemas/Content'
                             }
                         }
                     }
