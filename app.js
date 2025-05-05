@@ -7,6 +7,7 @@ const userRouter = require('./routers/user')
 const contentRouter = require('./routers/content')
 const commentRouter = require('./routers/comment')
 const listRouter = require('./routers/list')
+const contentUserRouter = require('./routers/content_user')
 
 // Express setup
 const app = express()
@@ -19,6 +20,7 @@ app.use(userRouter)
 app.use(contentRouter)
 app.use(commentRouter)
 app.use(listRouter)
+app.use(contentUserRouter)
 
 // Swagger docs
 require("./api-docs/swagger")(app)

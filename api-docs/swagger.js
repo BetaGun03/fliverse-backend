@@ -84,6 +84,18 @@ const swaggerOptions = {
                             }
                         }
                     }
+                },
+                ContentUser: {
+                    type: 'object',
+                    properties: {
+                      id_content_user: { type: 'integer' },
+                      status: {
+                        type: 'string',
+                        enum: ['watched', 'to_watch']
+                      },
+                      id_user:    { type: 'integer' },
+                      id_content: { type: 'integer' }
+                    }
                 }
             }
         }        

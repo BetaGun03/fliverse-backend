@@ -1,3 +1,4 @@
+// This file constains the routes for Comment table
 require("dotenv").config()
 const express = require('express')
 const { Comment } = require("../models/relations")

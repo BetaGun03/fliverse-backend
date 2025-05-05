@@ -1,3 +1,4 @@
+// This file constains the routes for List and Content_List tables
 require("dotenv").config()
 const express = require('express')
 const { List } = require("../models/relations")

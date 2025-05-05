@@ -5,6 +5,7 @@ const sequelize = require("../db/sequelizeConnection")
 class Content_User extends Model{
     toJSON(){
         const values = { ...this.get() }
+        delete values.id_user
         return values
     }
 }
