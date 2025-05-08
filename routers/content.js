@@ -515,6 +515,7 @@ router.get("/contents/posterByTitle", auth, async (req, res) => {
  * /contents/random:
  *   get:
  *     summary: Retrieve one or more random content items
+ *     security: []
  *     tags:
  *       - Contents
  *     parameters:
