@@ -20,7 +20,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${process.env.PORT || 2888}`,
+                url: `https://api.fliverse.es`,
             },
         ],
         components: {
@@ -105,8 +105,18 @@ const swaggerOptions = {
                         content_id: { type: 'integer' }
                     }
                 }
+            },
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
             }
-        }        
+        },
+        security:[
+            { bearerAuth: [] }
+        ]   
     },
     apis: [path.join(__dirname, '../routers/*.js')],
 }

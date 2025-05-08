@@ -19,6 +19,7 @@ const { getContainerClient } = require('../config/azureStorage')
  * /users/register:
  *   post:
  *     summary: Register a new user
+ *     security: []
  *     description: Registers a new user and optionally uploads a profile picture to Azure Blob Storage.
  *     tags:
  *       - Users
@@ -140,6 +141,7 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
  * /users/login:
  *   post:
  *     summary: Log in a user
+ *     security: []
  *     description: Authenticates a user by username and password. Returns the user info and a JWT authentication token.
  *     tags:
  *       - Users
@@ -234,6 +236,7 @@ router.post("/users/login", async (req, res) => {
  * /users/loginGoogle:
  *   post:
  *     summary: Log in or register a user via Google OAuth
+ *     security: []
  *     description: Authenticates or registers a user using a Google ID token. Returns the user info and a JWT token.
  *     tags:
  *       - Users
