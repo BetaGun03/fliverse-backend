@@ -96,6 +96,14 @@ const swaggerOptions = {
                       id_user:    { type: 'integer' },
                       id_content: { type: 'integer' }
                     }
+                },
+                Rating: {
+                    type: 'object',
+                    properties: {
+                        id:         { type: 'integer' },
+                        rating:     { type: 'number', format: 'double', minimum: 0, maximum: 10 },
+                        content_id: { type: 'integer' }
+                    }
                 }
             }
         }        
