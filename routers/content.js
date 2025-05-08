@@ -3,6 +3,7 @@ require("dotenv").config()
 const express = require('express')
 const { Op } = require('sequelize')
 const { Content } = require("../models/relations")
+const { literal } = require('sequelize')
 const auth = require('../middlewares/auth')
 const router = new express.Router()
 const upload = require('../middlewares/upload')
@@ -507,6 +508,96 @@ router.get("/contents/posterByTitle", auth, async (req, res) => {
         console.error(e)
         res.status(500).send({ e: "Internal server error" })
     }
+})
+
+/**
+ * @swagger
+ * /contents/random:
+ *   get:
+ *     summary: Retrieve one or more random content items
+ *     tags:
+ *       - Contents
+ *     parameters:
+ *       - in: query
+ *         name: n
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Number of random items to return
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         description: Filter by genre (array contains)
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
+ *         description: Comma‐separated list of keywords (array overlaps)
+ *     responses:
+ *       200:
+ *         description: A list of random content items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Content'
+ *       404:
+ *         description: No contents found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No contents found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.get("/contents/random", async (req, res) => {
+    try {
+        const n = parseInt(req.query.n, 10) || 1
+        const where = {}
+    
+        // Filter by genre (array contains)
+        if (req.query.genre) 
+        {
+          where.genre = { [Op.contains]: [req.query.genre] }
+        }
+    
+        // Filter by keywords (array overlaps)
+        if (req.query.keywords) 
+        {
+          const kws = req.query.keywords.split(',').map(k => k.trim())
+          where.keywords = { [Op.overlap]: kws }
+        }
+    
+        const randomContents = await Content.findAll({
+          where,
+          order: literal('RANDOM()'),
+          limit: n,
+        })
+    
+        if (randomContents.length === 0) 
+        {
+          return res.status(404).json({ error: 'No contents found' })
+        }
+    
+        res.status(200).send(randomContents)
+      } catch (err) {
+        console.error(err)
+        res.status(500).send({ error: 'Internal server error' })
+      }
 })
 
 module.exports = router
