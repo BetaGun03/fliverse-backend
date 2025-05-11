@@ -10,10 +10,31 @@ const listRouter = require('./routers/list')
 const contentUserRouter = require('./routers/content_user')
 const ratingRouter = require('./routers/rating')
 
+// Allowed CORS for the frontend
+const allowedOrigins = [process.env.ALLOWED_ORIGIN, process.env.ALLOWED_ORIGIN_LOCAL]
+const vercelRegex = /^https:\/\/.*\.jaimehedrera25\.vercel\.app$/
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true)
+  
+        if (allowedOrigins.includes(origin) || vercelRegex.test(origin) ) 
+        {
+            callback(null, true)
+        } 
+        else 
+        {
+            callback(new Error('CORS policy: Origin not allowed'), false)
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    credentials: true
+}
+
 // Express setup
 const app = express()
 app.set("trust proxy", 1) // Trust first proxy (for Vercel)
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
 
 // Routes
