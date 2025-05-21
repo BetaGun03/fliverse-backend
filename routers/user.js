@@ -215,12 +215,15 @@ router.post("/users/login", async (req, res) => {
             html: htmlContent
         }
 
+        /*
         emailSender.sendMail(mailOptions, (err, info) => {
             if (err)
             {
                 console.error(err)
             } 
-        })
+        })*/
+
+        await emailSender.sendMail(mailOptions)
         
         const token = await user.generateAuthToken()
         res.status(200).send({ user: user, token: token })
