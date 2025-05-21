@@ -109,12 +109,7 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
             html: htmlContent
         }
 
-        emailSender.sendMail(mailOptions, (err, info) => {
-            if (err)
-            {
-                console.error(err)
-            } 
-        })
+        await emailSender.sendMail(mailOptions)
 
         const token = await user.generateAuthToken()
         res.status(201).send({ user: user, token: token })
@@ -214,14 +209,6 @@ router.post("/users/login", async (req, res) => {
             subject: 'Fliverse login notification',
             html: htmlContent
         }
-
-        /*
-        emailSender.sendMail(mailOptions, (err, info) => {
-            if (err)
-            {
-                console.error(err)
-            } 
-        })*/
 
         await emailSender.sendMail(mailOptions)
         
@@ -349,12 +336,7 @@ router.post("/users/loginGoogle", async (req, res) => {
                 html: htmlContent
             }
 
-            emailSender.sendMail(mailOptions, (err, info) => {
-                if (err)
-                {
-                    console.error(err)
-                } 
-            })
+            await emailSender.sendMail(mailOptions)
         }
         else
         {
@@ -371,12 +353,7 @@ router.post("/users/loginGoogle", async (req, res) => {
                 html: htmlContent
             }
 
-            emailSender.sendMail(mailOptions, (err, info) => {
-                if (err)
-                {
-                    console.error(err)
-                } 
-            })
+            await emailSender.sendMail(mailOptions)
         }
         
         const bdtoken = await user.generateAuthToken()
@@ -464,12 +441,7 @@ router.post("/users/logoutAll", auth, async (req, res) => {
             html: htmlContent
         }
 
-        emailSender.sendMail(mailOptions, (err, info) => {
-            if (err)
-            {
-                console.error(err)
-            } 
-        })
+        await emailSender.sendMail(mailOptions)
         
         res.status(200).send("Logged out from all devices")
     }
@@ -605,12 +577,7 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
             html: htmlContent
         }
 
-        emailSender.sendMail(mailOptions, (err, info) => {
-            if (err)
-            {
-                console.error(err)
-            } 
-        })
+        await emailSender.sendMail(mailOptions)
 
         await user.save()
         res.status(200).send(user)
