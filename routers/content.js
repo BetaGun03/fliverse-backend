@@ -601,4 +601,69 @@ router.get("/contents/random", async (req, res) => {
       }
 })
 
+/**
+ * @swagger
+ * /contents/latest:
+ *   get:
+ *     summary: Retrieve the most recent content items
+ *     security: []
+ *     tags:
+ *       - Contents
+ *     parameters:
+ *       - in: query
+ *         name: n
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Number of recent items to return
+ *     responses:
+ *       200:
+ *         description: A list of the most recent content items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Content'
+ *       404:
+ *         description: No contents found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No contents found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.get("/contents/latest", async (req, res) => {
+    try {
+        const n = parseInt(req.query.n, 10) || 1
+        const latestContents = await Content.findAll({
+            order: [['creation_date', 'DESC']],
+            limit: n,
+        })
+
+        if (latestContents.length === 0) 
+        {
+            return res.status(404).json({ error: 'No contents found' })
+        }
+
+        res.status(200).send(latestContents)
+    } catch (err) {
+        console.error(err)
+        res.status(500).send({ error: 'Internal server error' })
+    }
+})
+
 module.exports = router
