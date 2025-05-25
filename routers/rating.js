@@ -475,6 +475,7 @@ router.delete('/ratings/:contentId', auth, async (req, res) => {
  * /ratings/average/{contentId}:
  *   get:
  *     summary: Get the average rating of a content item by its ID
+ *     security: []
  *     tags:
  *       - Ratings
  *     parameters:
