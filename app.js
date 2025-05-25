@@ -33,7 +33,7 @@ const corsOptions = {
 
 // Express setup
 const app = express()
-app.set("trust proxy", 1) // Trust first proxy (for Vercel)
+app.set("trust proxy", 3) // Trust first proxy (for Vercel)
 app.use(cors(corsOptions))
 app.use(express.json())
 
