@@ -219,6 +219,7 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
  * /contents/searchById:
  *   get:
  *     summary: Retrieve a content by its numeric ID
+ *     security: []
  *     tags:
  *       - Contents
  *     security:
@@ -246,7 +247,7 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.get("/contents/searchById", auth, async (req, res) => {
+router.get("/contents/searchById", async (req, res) => {
     try{
         if(!req.query.id)
         {
@@ -279,6 +280,7 @@ router.get("/contents/searchById", auth, async (req, res) => {
  * /contents/searchByTitle:
  *   get:
  *     summary: Retrieve contents matching a title substring
+ *     security: []
  *     tags:
  *       - Contents
  *     security:
@@ -308,7 +310,7 @@ router.get("/contents/searchById", auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get("/contents/searchByTitle", auth, async (req, res) => {
+router.get("/contents/searchByTitle", async (req, res) => {
     try{
         if(!req.query.title)
         {
@@ -347,6 +349,7 @@ router.get("/contents/searchByTitle", auth, async (req, res) => {
  * /contents/posterById:
  *   get:
  *     summary: Retrieve the poster image for a content by its numeric ID
+ *     security: []
  *     tags:
  *       - Contents
  *     security:
@@ -380,7 +383,7 @@ router.get("/contents/searchByTitle", auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get("/contents/posterById", auth, async (req, res) => {
+router.get("/contents/posterById", async (req, res) => {
     try{
         if(!req.query.id)
         {
@@ -427,6 +430,7 @@ router.get("/contents/posterById", auth, async (req, res) => {
  * /contents/posterByTitle:
  *   get:
  *     summary: Retrieve the poster image for a content by its title substring
+ *     security: []
  *     tags:
  *       - Contents
  *     security:
@@ -462,7 +466,7 @@ router.get("/contents/posterById", auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get("/contents/posterByTitle", auth, async (req, res) => {
+router.get("/contents/posterByTitle", async (req, res) => {
     try{
         if(!req.query.title)
         {
