@@ -1,6 +1,7 @@
 // This file constains the routes for Rating table
 require("dotenv").config()
 const express = require('express')
+const sequelize = require('sequelize')
 const { Rating } = require("../models/relations")
 const { Content } = require("../models/relations")
 const auth = require('../middlewares/auth')
@@ -464,6 +465,97 @@ router.delete('/ratings/:contentId', auth, async (req, res) => {
         res.status(200).send({ message: "Rating deleted successfully" })
     }
     catch (error) {
+        console.error(error)
+        return res.status(500).send({ error: "Internal server error" })
+    }
+})
+
+/**
+ * @swagger
+ * /ratings/average/{contentId}:
+ *   get:
+ *     summary: Get the average rating of a content item by its ID
+ *     tags:
+ *       - Ratings
+ *     parameters:
+ *       - in: path
+ *         name: contentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the content item
+ *     responses:
+ *       200:
+ *         description: Average rating retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 contentId:
+ *                   type: integer
+ *                 averageRating:
+ *                   type: number
+ *                   format: double
+ *       400:
+ *         description: Invalid content ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid content ID"
+ *       404:
+ *         description: No ratings found for this content
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No ratings found for this content"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+router.get('/ratings/average/:contentId', async (req, res) => {
+    try {
+        const contentId = parseInt(req.params.contentId)
+
+        if (isNaN(contentId)) 
+        {
+            return res.status(400).send({ error: "Invalid content ID" })
+        }
+
+        const result = await Rating.findAll({
+            where: { content_id: contentId },
+            attributes: [
+                'content_id',
+                [sequelize.fn('AVG', sequelize.col('rating')), 'averageRating']
+            ],
+            group: ['content_id']
+        })
+
+        if (!result || result.length === 0) 
+        {
+            return res.status(404).send({ error: "No ratings found for this content" })
+        }
+
+        res.status(200).send({
+            contentId: contentId,
+            averageRating: parseFloat(result[0].get('averageRating'))
+        })
+    } catch (error) {
         console.error(error)
         return res.status(500).send({ error: "Internal server error" })
     }
