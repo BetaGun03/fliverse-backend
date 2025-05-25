@@ -11,6 +11,7 @@ const contentUserRouter = require('./routers/content_user')
 const ratingRouter = require('./routers/rating')
 
 // Allowed CORS for the frontend
+/*
 const allowedOrigins = [process.env.ALLOWED_ORIGIN, process.env.ALLOWED_ORIGIN_LOCAL]
 const vercelRegex = /^https:\/\/.*\.jaimehedrera25\.vercel\.app$/
 
@@ -30,11 +31,11 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     credentials: true
 }
-
+*/
 // Express setup
 const app = express()
 app.set("trust proxy", 1) // Trust first proxy (for Vercel)
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
 
 // Routes
