@@ -222,8 +222,6 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
  *     security: []
  *     tags:
  *       - Contents
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: id
@@ -283,8 +281,6 @@ router.get("/contents/searchById", async (req, res) => {
  *     security: []
  *     tags:
  *       - Contents
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: title
@@ -352,8 +348,6 @@ router.get("/contents/searchByTitle", async (req, res) => {
  *     security: []
  *     tags:
  *       - Contents
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: id
@@ -433,8 +427,6 @@ router.get("/contents/posterById", async (req, res) => {
  *     security: []
  *     tags:
  *       - Contents
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: title
