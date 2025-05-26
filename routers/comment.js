@@ -38,7 +38,7 @@ router.post('/comments', auth, async (req, res) => {
     try{
         const text = req.body.text
 
-        const comment = Content.build({
+        const comment = Comment.build({
             text: text
         })
 
