@@ -152,7 +152,8 @@ router.get("/comments/content/:contentId", async (req, res) => {
         }
 
         const comments = await Comment.findAll({
-            where: { content_id: contentId }
+            where: { content_id: contentId },
+            order: [['comment_date', 'DESC']]
         })
 
         if (comments.length === 0) 
