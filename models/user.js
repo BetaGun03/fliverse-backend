@@ -8,7 +8,6 @@ class User extends Model{
     toJSON()
     {
         const values = { ...this.get() }
-        delete values.id
         delete values.password
         delete values.tokens
         delete values.sub
@@ -25,7 +24,6 @@ class User extends Model{
     getPublicProfileInfo()
     {
         const values = { ...this.get() }
-        delete values.id
         delete values.password
         delete values.tokens
         delete values.sub
