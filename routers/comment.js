@@ -58,8 +58,7 @@ router.post('/comments', auth, async (req, res) => {
  *     summary: Retrieve a comment by its ID
  *     tags:
  *       - Comments
- *     security:
- *       - bearerAuth: []
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -81,7 +80,7 @@ router.post('/comments', auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/comments/:id', auth, async (req, res) => {
+router.get('/comments/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10)
 
@@ -115,8 +114,7 @@ router.get('/comments/:id', auth, async (req, res) => {
  *     summary: Retrieve comments by content ID
  *     tags:
  *       - Comments
- *     security:
- *       - bearerAuth: []
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: contentId
@@ -140,7 +138,7 @@ router.get('/comments/:id', auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get("/comments/content/:contentId", auth, async (req, res) => {
+router.get("/comments/content/:contentId", async (req, res) => {
     try {
         const contentId = parseInt(req.params.contentId, 10)
 
