@@ -14,12 +14,25 @@ const router = new express.Router()
  *       - Comments
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: contentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Numeric ID of the content to comment on
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Comment'
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: The comment text
  *     responses:
  *       201:
  *         description: Comment created successfully
@@ -28,7 +41,7 @@ const router = new express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Comment'
  *       400:
- *         description: Bad request – text is required
+ *         description: Bad request – missing or invalid text or contentId
  *       401:
  *         description: Unauthorized – authentication required
  *       500:
@@ -36,10 +49,25 @@ const router = new express.Router()
  */
 router.post('/comments', auth, async (req, res) => {
     try{
+        const user = req.user
         const text = req.body.text
+        const content_id = parseInt(req.query.contentId, 10)
+
+        if(isNaN(content_id))
+        {
+            return res.status(400).send({ error: 'content_id is a required parameter' })
+        }
+
+        if (!text || !text.trim()) 
+        {
+            return res.status(400).send({ error: 'text is a required parameter' })
+        }
 
         const comment = Comment.build({
-            text: text
+            text: text,
+            content_id: content_id,
+            user_id: user.id,
+            comment_date: new Date()
         })
 
         await comment.save()
