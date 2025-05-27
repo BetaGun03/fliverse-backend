@@ -11,7 +11,7 @@ const contentUserRouter = require('./routers/content_user')
 const ratingRouter = require('./routers/rating')
 
 // Allowed CORS for the frontend
-const allowedOrigins = [process.env.ALLOWED_ORIGIN, process.env.ALLOWED_ORIGIN_LOCAL]
+const allowedOrigins = [process.env.ALLOWED_ORIGIN, process.env.ALLOWED_ORIGIN_LOCAL, "http://localhost:2777", "https://api.fliverse.es", "https://api.fliverse.es/api-docs/", "http://localhost:3000"]
 const vercelRegex = /^https:\/\/.*\.jaimehedrera25\.vercel\.app$/
 
 const corsOptions = {
