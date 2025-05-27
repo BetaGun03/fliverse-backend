@@ -142,21 +142,21 @@ router.get("/contents_user", auth, async (req, res) => {
 
 /**
  * @swagger
- * /contents_user/{IdContentUser}:
+ * /contents_user/{contentId}:
  *   get:
- *     summary: Retrieve a specific content association for the authenticated user
- *     description: Fetches a CONTENT_USER record by its ID for the logged-in user. Requires a valid Bearer token.
+ *     summary: Retrieve a specific content association for the authenticated user by contentId
+ *     description: Fetches a CONTENT_USER record by contentId for the logged-in user. Requires a valid Bearer token.
  *     tags:
  *       - ContentUser
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id_content_user
+ *         name: contentId
  *         required: true
  *         schema:
  *           type: integer
- *         description: Numeric ID of the content-user association
+ *         description: Numeric ID of the content
  *     responses:
  *       200:
  *         description: Association retrieved successfully
@@ -165,19 +165,19 @@ router.get("/contents_user", auth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ContentUser'
  *       400:
- *         description: Invalid content-user ID
+ *         description: Invalid content ID
  *       404:
  *         description: Entry not found
  *       500:
  *         description: Internal server error
  */
-router.get("/contents_user/:IdContentUser", auth, async (req, res) => {
-    try{
+router.get("/contents_user/:contentId", auth, async (req, res) => {
+    try {
         const user = req.user
-        const id_content_user = parseInt(req.params.IdContentUser, 10)
+        const contentId = parseInt(req.params.contentId, 10)
 
         // Validate the request parameters
-        if (isNaN(id_content_user)) 
+        if (isNaN(contentId)) 
         {
             return res.status(400).send({ error: 'Invalid Content ID' })
         }
@@ -185,7 +185,7 @@ router.get("/contents_user/:IdContentUser", auth, async (req, res) => {
         // Fetch the specific Content_User row, ensure it belongs to the auth’d user
         const contentUser = await Content_User.findOne({
             where: {
-                id_content_user: id_content_user,
+                id_content: contentId,
                 id_user: user.id
             }
         })
