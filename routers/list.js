@@ -28,12 +28,8 @@ const router = new express.Router()
  *               description:
  *                 type: string
  *                 example: "A collection of articles I like"
- *               contentId:
- *                 type: integer
- *                 example: 123
  *             required:
  *               - name
- *               - contentId
  *     responses:
  *       201:
  *         description: List created successfully
@@ -50,13 +46,11 @@ router.post('/lists', auth, async (req, res) => {
     try{
         const list = List.build({
             name: req.body.name,
-            description: req.body.description
+            description: req.body.description,
+            user_id: req.user.id
         })
 
-        const content = await Content.findByPk(req.body.contentId)
-
         await list.save()
-        await list.addContent(content)
         res.status(201).send(list)
     }
     catch (error) {
@@ -307,6 +301,102 @@ router.patch('/lists/:id', auth, async (req, res) => {
         res.status(200).send(list)
     }
     catch (error) {
+        console.error(error)
+        return res.status(500).send({ error: 'Internal server error' })
+    }
+})
+
+/**
+ * @swagger
+ * /lists/{id}/contents:
+ *   post:
+ *     summary: Add a content to an existing list for the authenticated user
+ *     tags:
+ *       - Lists
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Numeric ID of the list
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - contentId
+ *             properties:
+ *               contentId:
+ *                 type: integer
+ *                 example: 123
+ *     responses:
+ *       200:
+ *         description: Content added to list successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Content added to list successfully
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: List ID and contentId are required
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: List or content not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: List not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/lists/:id/contents', auth, async (req, res) => {
+    try {
+        const listId = parseInt(req.params.id, 10)
+        const contentId = req.body.contentId
+
+        if (isNaN(listId) || !contentId) 
+        {
+            return res.status(400).send({ error: 'List ID and contentId are required' })
+        }
+
+        const list = await List.findOne({ where: { id: listId, user_id: req.user.id } })
+
+        if (!list) 
+        {
+            return res.status(404).send({ error: 'List not found' })
+        }
+
+        const content = await Content.findByPk(contentId)
+
+        if (!content) 
+        {
+            return res.status(404).send({ error: 'Content not found' })
+        }
+
+        await list.addContent(content)
+        res.status(200).send({ message: 'Content added to list successfully' })
+    } catch (error) {
         console.error(error)
         return res.status(500).send({ error: 'Internal server error' })
     }
