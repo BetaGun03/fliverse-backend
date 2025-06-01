@@ -142,6 +142,56 @@ router.get("/contents_user", auth, async (req, res) => {
 
 /**
  * @swagger
+ * /contents_user/watched:
+ *   get:
+ *     summary: Retrieve all contents marked as watched for the authenticated user
+ *     tags:
+ *       - ContentUser
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Watched contents retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Content'
+ *       404:
+ *         description: No watched contents found for the user
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/contents_user/watched", auth, async (req, res) => {
+    try {
+        const user = req.user
+        const watchedContentUsers = await Content_User.findAll({
+            where: { id_user: user.id, status: 'watched' }
+        })
+
+        if (!watchedContentUsers || watchedContentUsers.length === 0) 
+        {
+            return res.status(404).send({ error: 'No watched contents found for the user' })
+        }
+
+        // Get the IDs of the watched contents
+        const contentIds = watchedContentUsers.map(cu => cu.id_content)
+
+        // Fetch the complete content details
+        const watchedContents = await Content.findAll({
+            where: { id: contentIds }
+        })
+
+        res.status(200).json(watchedContents)
+    } catch (e) {
+        console.log(e)
+        return res.status(500).send({ error: 'Internal server error' })
+    }
+})
+
+/**
+ * @swagger
  * /contents_user/{contentId}:
  *   get:
  *     summary: Retrieve a specific content association for the authenticated user by contentId
