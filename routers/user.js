@@ -64,7 +64,12 @@ const { getContainerClient } = require('../config/azureStorage')
  *               type: object
  *               properties:
  *                 user:
- *                   $ref: '#/components/schemas/User'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
  *                 token:
  *                   type: string
  *                   description: JWT authentication token
@@ -166,7 +171,12 @@ router.post("/users/register", upload.single("profile_pic") ,async (req, res) =>
  *               type: object
  *               properties:
  *                 user:
- *                   $ref: '#/components/schemas/User'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
  *                 token:
  *                   type: string
  *                   description: JWT authentication token
@@ -252,7 +262,12 @@ router.post("/users/login", async (req, res) => {
  *               type: object
  *               properties:
  *                 user:
- *                   $ref: '#/components/schemas/User'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
  *                 bdtoken:
  *                   type: string
  *                   description: JWT token issued by the backend
@@ -467,7 +482,23 @@ router.post("/users/logoutAll", auth, async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 birthdate:
+ *                   type: string
+ *                   format: date
+ *                 profile_pic:
+ *                   type: string
+ *                 profile_pic_mime:
+ *                   type: string
  *       500:
  *         description: Server error
  */
@@ -523,7 +554,12 @@ router.get("/users/me", auth ,async(req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
  *       400:
  *         description: Invalid updates
  *       500:

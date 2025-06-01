@@ -26,13 +26,17 @@ const { getContainerClient } = require('../config/azureStorage')
  *             type: object
  *             required:
  *               - title
- *               - description
+ *               - synopsis
  *               - type
  *               - poster
+ *               - duration
+ *               - genre
+ *               - keywords
+ *               - poster_mime
  *             properties:
  *               title:
  *                 type: string
- *               description:
+ *               synopsis:
  *                 type: string
  *               type:
  *                 type: string
@@ -42,6 +46,30 @@ const { getContainerClient } = require('../config/azureStorage')
  *               poster:
  *                 type: string
  *                 format: binary
+ *               poster_mime:
+ *                 type: string
+ *                 description: MIME type of the poster image (e.g., image/jpeg)
+ *               trailer_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: Optional trailer URL
+ *               release_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Optional release date
+ *               duration:
+ *                 type: integer
+ *                 description: Duration in minutes
+ *               genre:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of genres
+ *               keywords:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of keywords
  *     responses:
  *       201:
  *         description: Content created successfully
@@ -120,11 +148,35 @@ router.post("/contents", auth, upload.single("poster"), async (req, res) => {
  *             properties:
  *               title:
  *                 type: string
- *               description:
+ *               synopsis:
  *                 type: string
  *               poster:
  *                 type: string
  *                 format: binary
+ *               poster_mime:
+ *                 type: string
+ *                 description: MIME type of the poster image (e.g., image/jpeg)
+ *               trailer_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: Optional trailer URL
+ *               release_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Optional release date
+ *               duration:
+ *                 type: integer
+ *                 description: Duration in minutes
+ *               genre:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of genres
+ *               keywords:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of keywords
  *     responses:
  *       200:
  *         description: Content updated successfully
