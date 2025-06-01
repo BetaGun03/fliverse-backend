@@ -588,6 +588,11 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
             user[field] = req.body[field]
         })
 
+        if (updates.includes("password")) 
+        {
+            user.tokens = []
+        }
+
         if(req.file)
         {
             const containerClient = await getContainerClient()
