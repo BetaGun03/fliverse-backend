@@ -88,8 +88,15 @@ const { getContainerClient } = require('../config/azureStorage')
  */
 router.post("/contents", auth, upload.single("poster"), async (req, res) => {
     let url
+
+    // Convert genre and keywords to arrays if they are not already
+    const genre = Array.isArray(req.body.genre) ? req.body.genre : req.body.genre ? [req.body.genre] : []
+    const keywords = Array.isArray(req.body.keywords) ? req.body.keywords : req.body.keywords ? [req.body.keywords] : []
+
     const content = Content.build({
         ...req.body,
+        genre,
+        keywords,
         poster: req.file.buffer,
         poster_mime: req.file.mimetype,
     })
