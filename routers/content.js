@@ -1,7 +1,7 @@
 // This file contains the Content routes for the API.
 require("dotenv").config()
 const express = require('express')
-const { Op } = require('sequelize')
+const { Op, fn, col, where: seqWhere } = require('sequelize')
 const { Content } = require("../models/relations")
 const { literal } = require('sequelize')
 const auth = require('../middlewares/auth')
@@ -297,8 +297,6 @@ router.patch("/contents/:id", auth, upload.single("poster"), async (req, res) =>
  *               $ref: '#/components/schemas/Content'
  *       400:
  *         description: Missing or invalid id
- *       401:
- *         description: Unauthorized – missing or invalid token
  *       404:
  *         description: No content found with the given id
  *       500:
@@ -336,7 +334,7 @@ router.get("/contents/searchById", async (req, res) => {
  * @swagger
  * /contents/searchByTitle:
  *   get:
- *     summary: Retrieve contents matching a title substring
+ *     summary: Retrieve contents matching a title substring with optional filters and pagination
  *     security: []
  *     tags:
  *       - Contents
@@ -347,27 +345,109 @@ router.get("/contents/searchById", async (req, res) => {
  *           type: string
  *         required: true
  *         description: Substring to search in content titles
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by genre (array contains)
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Comma-separated list of keywords (array overlaps)
+ *       - in: query
+ *         name: release_date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter by exact release date (YYYY-MM-DD)
+ *       - in: query
+ *         name: release_date_from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter by release date greater than or equal to this value (YYYY-MM-DD)
+ *       - in: query
+ *         name: release_date_to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter by release date less than or equal to this value (YYYY-MM-DD)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [movie, series]
+ *         required: false
+ *         description: Filter by content type
+ *       - in: query
+ *         name: duration
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter by exact duration (in minutes)
+ *       - in: query
+ *         name: duration_min
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter by minimum duration (in minutes)
+ *       - in: query
+ *         name: duration_max
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter by maximum duration (in minutes)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         required: false
+ *         description: Number of items per page
  *     responses:
  *       200:
- *         description: List of matching contents
+ *         description: List of matching contents with pagination info
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Content'
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of matching contents
+ *                 page:
+ *                   type: integer
+ *                   description: Current page number
+ *                 limit:
+ *                   type: integer
+ *                   description: Number of items per page
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Content'
  *       400:
  *         description: Missing or empty title
- *       401:
- *         description: Unauthorized – missing or invalid token
  *       404:
  *         description: No content found
  *       500:
  *         description: Internal server error
  */
 router.get("/contents/searchByTitle", async (req, res) => {
-    try{
-        if(!req.query.title)
+    try {
+        if (!req.query.title) 
         {
             return res.status(400).send("Missing title")
         }
@@ -375,15 +455,110 @@ router.get("/contents/searchByTitle", async (req, res) => {
         const title = (req.query.title || '').trim()
         if (!title) 
         {
-           return res.status(400).send("Missing or empty title")
+            return res.status(400).send("Missing or empty title")
         }
 
-        const contents = await Content.findAll({
-            where: {
-                title: {
-                    [Op.like]: `%${title}%`
+        // Pagination parameters
+        const page = parseInt(req.query.page, 10) > 0 ? parseInt(req.query.page, 10) : 1
+        const limit = parseInt(req.query.limit, 10) > 0 ? parseInt(req.query.limit, 10) : 10
+        const offset = (page - 1) * limit
+
+        // Build dynamic filters
+        const where = {
+            title: { [Op.iLike]: `%${title}%` }
+        }
+
+        // Filter by genre (array contains, case-insensitive)
+        if (req.query.genre) 
+        {
+            const genres = req.query.genre.split(',').map(g => g.trim().toLowerCase())
+            where[Op.and] = where[Op.and] || []
+            genres.forEach(genre => {
+                where[Op.and].push(
+                    seqWhere(
+                        literal(`LOWER("genre"::text)`),
+                        {
+                            [Op.like]: `%${genre}%`
+                        }
+                    )
+                )
+            })
+        }
+
+        // Filter by keywords (array overlaps, case-insensitive)
+        if (req.query.keywords) 
+        {
+            const kws = req.query.keywords.split(',').map(k => k.trim().toLowerCase())
+            where[Op.and] = where[Op.and] || []
+            kws.forEach(kw => {
+                where[Op.and].push(
+                    seqWhere(
+                        literal(`LOWER("keywords"::text)`),
+                        {
+                            [Op.like]: `%${kw}%`
+                        }
+                    )
+                )
+            })
+        }
+
+        // Filter by release_date (exact or range)
+        if (req.query.release_date) 
+        {
+            where.release_date = req.query.release_date
+        } 
+        else 
+        {
+            if (req.query.release_date_from && req.query.release_date_to) 
+            {
+                where.release_date = {
+                    [Op.between]: [req.query.release_date_from, req.query.release_date_to]
                 }
+            } 
+            else if (req.query.release_date_from) 
+            {
+                where.release_date = { [Op.gte]: req.query.release_date_from }
+            } 
+            else if (req.query.release_date_to) 
+            {
+                where.release_date = { [Op.lte]: req.query.release_date_to }
             }
+        }
+
+        // Filter by type
+        if (req.query.type) 
+        {
+            where.type = req.query.type
+        }
+
+        // Filter by duration (exact or range)
+        if (req.query.duration) 
+        {
+            where.duration = req.query.duration
+        } 
+        else 
+        {
+            if (req.query.duration_min && req.query.duration_max) 
+            {
+                where.duration = {
+                    [Op.between]: [parseInt(req.query.duration_min), parseInt(req.query.duration_max)]
+                }
+            } 
+            else if (req.query.duration_min) 
+            {
+                where.duration = { [Op.gte]: parseInt(req.query.duration_min) }
+            } 
+            else if (req.query.duration_max) 
+            {
+                where.duration = { [Op.lte]: parseInt(req.query.duration_max) }
+            }
+        }
+
+        // Paginated and total query
+        const { count, rows: contents } = await Content.findAndCountAll({
+            where,
+            limit,
+            offset
         })
 
         if (contents.length === 0) 
@@ -391,9 +566,13 @@ router.get("/contents/searchByTitle", async (req, res) => {
             return res.status(404).send("No content found")
         }
 
-        res.status(200).send(contents)
-    }
-    catch (e) {
+        res.status(200).send({
+            total: count,
+            page,
+            limit,
+            results: contents
+        })
+    } catch (e) {
         console.error(e)
         res.status(500).send({ e: "Internal server error" })
     }
@@ -427,8 +606,6 @@ router.get("/contents/searchByTitle", async (req, res) => {
  *               format: binary
  *       400:
  *         description: Missing or invalid id
- *       401:
- *         description: Unauthorized – missing or invalid token
  *       404:
  *         description: 
  *           - No content found with the given id  
@@ -508,8 +685,6 @@ router.get("/contents/posterById", async (req, res) => {
  *         description:
  *           - Missing title
  *           - Empty title
- *       401:
- *         description: Unauthorized – missing or invalid token
  *       404:
  *         description:
  *           - No content found with the given title
