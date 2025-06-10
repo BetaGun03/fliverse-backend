@@ -896,4 +896,71 @@ router.get("/contents/latest", async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /contents/genres:
+ *   get:
+ *     summary: Retrieve all unique genres from contents
+ *     security: []
+ *     tags:
+ *       - Contents
+ *     responses:
+ *       200:
+ *         description: List of unique genres
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 genres:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       404:
+ *         description: No genres found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No genres found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.get("/contents/genres", async (req, res) => {
+    try {
+        const contents = await Content.findAll({
+            attributes: ['genre']
+        })
+        
+        // Flatten the genre arrays and filter out empty values
+        const allGenres = contents
+            .map(content => content.genre || [])
+            .flat()
+            .filter(Boolean)
+
+        if (allGenres.length === 0) 
+        {
+            return res.status(404).json({ error: 'No genres found' })
+        }
+
+        const uniqueGenres = [...new Set(allGenres)]
+
+        res.status(200).json({ genres: uniqueGenres })
+    } catch (e) {
+        console.error(e)
+        res.status(500).json({ error: "Internal server error" })
+    }
+})
+
 module.exports = router
