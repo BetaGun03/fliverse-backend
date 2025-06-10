@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const express = require('express')
 const { User } = require("../models/relations")
+const { sequelize } = require("../models/relations")
 const auth = require('../middlewares/auth')
 const router = new express.Router()
 const upload = require('../middlewares/upload')
@@ -624,6 +625,47 @@ router.patch("/users/me", auth, upload.single("profile_pic"), async(req, res) =>
         res.status(200).send(user)
     }
     catch (e) {
+        console.error(e)
+        res.status(500).send("Server error")
+    }
+})
+
+/**
+ * @swagger
+ * /users/me:
+ *   delete:
+ *     summary: Delete current user
+ *     description: Deletes the authenticated user's account permanently.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User deleted successfully
+ *       500:
+ *         description: Server error
+ */
+router.delete("/users/me", auth, async(req, res) => {
+    const t = await sequelize.transaction()
+
+    try {
+        const user = req.user
+
+        await user.destroy({ transaction: t })
+
+        await t.commit()
+        res.status(200).send({ message: "User deleted successfully" })
+    } catch (e) {
+        await t.rollback()
         console.error(e)
         res.status(500).send("Server error")
     }

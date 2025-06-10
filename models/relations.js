@@ -140,5 +140,6 @@ module.exports = {
     Rating,
     Content_User,
     Comment,
-    Content_List
+    Content_List,
+    sequelize
 }
