@@ -334,7 +334,7 @@ router.get("/contents/searchById", async (req, res) => {
  * @swagger
  * /contents/searchByTitle:
  *   get:
- *     summary: Retrieve contents matching a title substring with optional filters and pagination
+ *     summary: Search contents by title, genre, or keywords with optional filters and pagination
  *     security: []
  *     tags:
  *       - Contents
@@ -343,20 +343,20 @@ router.get("/contents/searchById", async (req, res) => {
  *         name: title
  *         schema:
  *           type: string
- *         required: true
+ *         required: false
  *         description: Substring to search in content titles
  *       - in: query
  *         name: genre
  *         schema:
  *           type: string
  *         required: false
- *         description: Filter by genre (array contains)
+ *         description: Comma-separated list of genres to search for (case-insensitive, partial match)
  *       - in: query
  *         name: keywords
  *         schema:
  *           type: string
  *         required: false
- *         description: Comma-separated list of keywords (array overlaps)
+ *         description: Comma-separated list of keywords to search for (case-insensitive, partial match)
  *       - in: query
  *         name: release_date
  *         schema:
@@ -439,7 +439,7 @@ router.get("/contents/searchById", async (req, res) => {
  *                   items:
  *                     $ref: '#/components/schemas/Content'
  *       400:
- *         description: Missing or empty title
+ *         description: At least one of title, genre, or keywords is required
  *       404:
  *         description: No content found
  *       500:
@@ -447,15 +447,12 @@ router.get("/contents/searchById", async (req, res) => {
  */
 router.get("/contents/searchByTitle", async (req, res) => {
     try {
-        if (!req.query.title) 
-        {
-            return res.status(400).send("Missing title")
-        }
+        const { title, genre, keywords } = req.query
 
-        const title = (req.query.title || '').trim()
-        if (!title) 
+        // At least one of title, genre, or keywords is required
+        if (!title && !genre && !keywords) 
         {
-            return res.status(400).send("Missing or empty title")
+            return res.status(400).send("At least one of title, genre, or keywords is required")
         }
 
         // Pagination parameters
@@ -464,45 +461,49 @@ router.get("/contents/searchByTitle", async (req, res) => {
         const offset = (page - 1) * limit
 
         // Build dynamic filters
-        const where = {
-            title: { [Op.iLike]: `%${title}%` }
+        const where = {}
+        where[Op.and] = []
+
+        // Search by title (if provided)
+        if (title && title.trim()) 
+        {
+            where[Op.and].push({
+                title: { [Op.iLike]: `%${title.trim()}%` }
+            })
         }
 
-        // Filter by genre (array contains, case-insensitive)
-        if (req.query.genre) 
+        // Search by genre (if provided)
+        if (genre) 
         {
-            const genres = req.query.genre.split(',').map(g => g.trim().toLowerCase())
-            where[Op.and] = where[Op.and] || []
-            genres.forEach(genre => {
+            const genres = genre.split(',').map(g => g.trim().toLowerCase())
+
+            genres.forEach(g => {
                 where[Op.and].push(
                     seqWhere(
                         literal(`LOWER("genre"::text)`),
-                        {
-                            [Op.like]: `%${genre}%`
-                        }
+                        { [Op.like]: `%${g}%` }
                     )
                 )
             })
         }
 
-        // Filter by keywords (array overlaps, case-insensitive)
-        if (req.query.keywords) 
+        // Search by keywords (if provided)
+        if (keywords) 
         {
-            const kws = req.query.keywords.split(',').map(k => k.trim().toLowerCase())
-            where[Op.and] = where[Op.and] || []
+            const kws = keywords.split(',').map(k => k.trim().toLowerCase())
+
             kws.forEach(kw => {
                 where[Op.and].push(
                     seqWhere(
                         literal(`LOWER("keywords"::text)`),
-                        {
-                            [Op.like]: `%${kw}%`
-                        }
+                        { [Op.like]: `%${kw}%` }
                     )
                 )
             })
         }
 
-        // Filter by release_date (exact or range)
+        // Additional filters
+        // release_date (exact or range)
         if (req.query.release_date) 
         {
             where.release_date = req.query.release_date
@@ -525,13 +526,13 @@ router.get("/contents/searchByTitle", async (req, res) => {
             }
         }
 
-        // Filter by type
+        // type
         if (req.query.type) 
         {
             where.type = req.query.type
         }
 
-        // Filter by duration (exact or range)
+        // duration (exact or range)
         if (req.query.duration) 
         {
             where.duration = req.query.duration
@@ -552,6 +553,12 @@ router.get("/contents/searchByTitle", async (req, res) => {
             {
                 where.duration = { [Op.lte]: parseInt(req.query.duration_max) }
             }
+        }
+
+        // If there are no conditions in Op.and, delete it to avoid errors
+        if (where[Op.and].length === 0) 
+        {
+            delete where[Op.and]
         }
 
         // Paginated and total query
