@@ -1,6 +1,8 @@
 # 🎬 Fliverse - Backend API
 
 <div align="center">
+
+<img src="https://fliverse.es/logo.png" alt="Fliverse Logo" width="200" height="200"/>
   
   **API REST para la plataforma web comunitaria Fliverse**
   
